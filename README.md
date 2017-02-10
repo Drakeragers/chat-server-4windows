@@ -114,3 +114,61 @@
     
 
 	start()
+
+And here the client
+
+	import sys, socket, threading
+
+	def chat_client():
+    	#if len(sys.argv) < 3:
+        	#print("[!] Usage : chat_client.py hostname port")
+        	#sys.exit()
+    
+    	#host = sys.argv[1]
+    	#port = int(sys.argv[2])
+    
+    	host = '192.168.1.38'
+    	port = 4444
+    
+    	client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    	client_sock.settimeout(2)
+    
+    	try:
+        	client_sock.connect((host, port))
+    	except:
+        	print("[!] Error : Unable to connect.")
+        	sys.exit()
+    
+    	print("[*] Connected to remote host. You can start to sending messages.")
+    
+    	thread = threading.Thread(target=recv_msg, args=(client_sock,))
+    	thread.start()
+    
+    	sys.stdout.write("[Me] "); sys.stdout.flush()
+    
+    	while True:
+        	try:
+            
+            	msg = sys.stdin.readline()
+            	client_sock.send(msg.encode(encoding='utf_8'))
+            	sys.stdout.write('[Me] '); sys.stdout.flush() 
+        	except:        
+            	print("[!] Connection closed.")
+            	sys.exit(chat_client())
+
+	def recv_msg(sock):
+    	while True:
+        	try:
+            	data = sock.recv(4096)
+
+            	if not data:
+                	print("\n[!] Disconnected from server_chat.")
+                	sys.exit()
+            	else:
+               
+                	sys.stdout.write(data.decode(encoding='utf_8'))
+                	sys.stdout.write('[Me] '); sys.stdout.flush()
+        	except:
+            	continue
+
+	chat_client()
